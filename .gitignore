@@ -1,0 +1,8 @@
+HDL_LIBRARIES/
+*.gz
+synth/trial/mul_unit.nlib/
+synth/trial/work/
+synth/trial/work_dir/
+synth/trial/WORK.nlib/
+synth/trial/setup
+synth/trial/check_design*
