@@ -1,0 +1,48 @@
+# UPF
+
+# power domains
+create_power_domain TOP -elements {.}
+
+# physical domain independent supplies
+
+# supply network - supply ports
+create_supply_port VSS -direction in
+create_supply_port VDD -direction in
+
+# supply network - supply nets
+create_supply_net VSS
+create_supply_net VDD
+
+# supply network - connect supply nets to supply ports
+connect_supply_net VSS -ports VSS
+connect_supply_net VDD -ports VDD
+
+# Related supplies are not explicitly specified on 158 port(s) and primary supplies (VDD, VSS)
+# of top power domain will be assumed as the related supply. (UPF-467)
+set_port_attributes -elements {.} -applies_to input -driver_supply TOP.primary
+set_port_attributes -elements {.} -applies_to output -receiver_supply TOP.primary
+
+# update implicit supply set 
+create_supply_set TOP.primary -function {power VDD}     -function {ground VSS} -update
+
+# power states
+add_power_state -supply TOP.primary -state { ON  -supply_expr {power == {FULL_ON 0.95 1.16} && ground == {FULL_ON 0.0}} -simstate NORMAL }
+add_power_state -supply TOP.primary -state { OFF -supply_expr {power == {OFF}               && ground == {FULL_ON 0.0}} -simstate NORMAL } -update
+
+
+# man MV-1106
+# All level shifter library cells available to the design or  specified
+# in  map_level_shifter_cell/map_isolation_cell command use output rail
+# as standard cell main  rail  (i.e.,  output  supply  of  these  level
+# shifter library cells need to be connected to the domain primary sup-
+# ply).
+
+
+# High to Low LS                LSDN   VDDH, VDDL (std_cell_main_rail), VSS A(VDDH), Y(VDDL)
+
+# low_to_high LS must be in TOP where std_cell_main_rail is VDD
+# Otherwise create_mv_cells errors out with MV-1106 error
+
+# UPF Training
+# Low-to-High LS is generally dual rail
+# High-to-Low LS is generally single rail
